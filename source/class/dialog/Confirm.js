@@ -1,20 +1,20 @@
 /* ************************************************************************
 
    qooxdoo dialog library
-  
+
    http://qooxdoo.org/contrib/catalog/#Dialog
-  
+
    Copyright:
      2007-2014 Christian Boulanger
-  
+
    License:
      LGPL: http://www.gnu.org/licenses/lgpl.html
      EPL: http://www.eclipse.org/org/documents/epl-v10.php
      See the LICENSE file in the project's top-level directory for details.
-  
+
    Authors:
    *  Christian Boulanger (cboulanger)
-  
+
 ************************************************************************ */
 /*global qx dialog*/
 
@@ -24,12 +24,12 @@
 qx.Class.define("dialog.Confirm",
 {
   extend : dialog.Dialog,
-  
+
   /*
   *****************************************************************************
      STATIC METHODS
   *****************************************************************************
-  */     
+  */
   statics:
   {
     /**
@@ -45,7 +45,7 @@ qx.Class.define("dialog.Confirm",
   *****************************************************************************
      PROPERTIES
   *****************************************************************************
-  */     
+  */
   properties :
   {
 		/**
@@ -68,8 +68,8 @@ qx.Class.define("dialog.Confirm",
       nullable : true,
       init : "icon/22/actions/dialog-ok.png",
       event : "changeYesButtonIcon"
-    },    
-    
+    },
+
 		/**
 		 * Label used for the "no button"
 		 */
@@ -91,7 +91,7 @@ qx.Class.define("dialog.Confirm",
       init : "icon/22/actions/dialog-cancel.png",
       event : "changeNoButtonIcon"
     },
-    
+
 		/**
 		 * This property controls the display of a cancel button
 		 */
@@ -99,17 +99,23 @@ qx.Class.define("dialog.Confirm",
     {
       refine : true,
       init : false
+    },
+
+    appearance :
+    {
+      refine: true,
+      init: "dialog-confirm"
     }
   },
-  
+
   /*
   *****************************************************************************
      MEMBERS
   *****************************************************************************
-  */     
+  */
   members :
   {
-    
+
     /*
     ---------------------------------------------------------------------------
        PRIVATE MEMBERS
@@ -117,93 +123,132 @@ qx.Class.define("dialog.Confirm",
     */
     _yesButton : null,
     _noButton  : null,
-    
+
     /*
     ---------------------------------------------------------------------------
        WIDGET LAYOUT
     ---------------------------------------------------------------------------
-    */     
-    
+    */
+
+      _createChildControlImpl : function(id)
+    {
+      var control;
+
+      switch(id)
+      {
+        case "groupBox":
+          control = new qx.ui.groupbox.GroupBox().set({
+              contentPadding: [16, 16, 16, 16]
+          });
+          this._add(control);
+          break;
+        case "image":
+              control = new qx.ui.basic.Image();
+              this._add(control);
+              break;
+        case "hbox":
+          control = new qx.ui.container.Composite();
+          this._add(control);
+          break;
+          case "label":
+              control = new qx.ui.basic.Label();
+              this._add(control);
+              break;
+          case "yesButton":
+              control = new qx.ui.form.Button();
+              this._add(control);
+              break;
+          case "noButton":
+              control = new qx.ui.form.Button();
+              this._add(control);
+              break;
+          case "buttonPane":
+              control = new qx.ui.container.Composite();
+              this._add(control);
+              break;
+      }
+
+      return control || this.base(arguments, id);
+    },
+
     /**
      * Create the main content of the widget
      */
     _createWidgetContent : function()
-    {      
+    {
 
       /*
        * groupbox
        */
-      var groupboxContainer = new qx.ui.groupbox.GroupBox().set({
-        contentPadding: [16, 16, 16, 16]
-      });
+      var groupboxContainer = this.getChildControl("groupBox");
       groupboxContainer.setLayout( new qx.ui.layout.VBox(10) );
       this.add( groupboxContainer );
 
-      var hbox = new qx.ui.container.Composite;
+      var hbox = this.getChildControl("hbox");
       hbox.setLayout( new qx.ui.layout.HBox(10) );
       groupboxContainer.add( hbox );
-      
+
       /*
-       * add image 
+       * add image
        */
-      this._image = new qx.ui.basic.Image();
+      this._image = this.getChildControl("image");
       this._image.setVisibility("excluded");
       hbox.add( this._image );
-      
+
       /*
        * Add message label
        */
-      this._message = new qx.ui.basic.Label();
+      this._message = this.getChildControl("label");
       this._message.setRich(true);
       this._message.setWidth(200);
       this._message.setAllowStretchX(true);
-      hbox.add( this._message, {flex:1} );    
-      
-      /* 
-       * Yes button 
+      hbox.add( this._message, {flex:1} );
+
+      /*
+       * Yes button
        */
-      var yesButton = this._yesButton =  new qx.ui.form.Button;
+      var yesButton = this._yesButton = this.getChildControl("yesButton");
       yesButton.setAllowStretchX(true);
       yesButton.addListener("execute", this._handleYes, this );
       this.bind("yesButtonLabel", yesButton, "label");
       this.bind("yesButtonIcon",  yesButton, "icon");
       yesButton.setLabel( this.tr("yes") );
-      
-      /* 
-       * No button 
+
+      /*
+       * No button
        */
-      var noButton = this._noButton = new qx.ui.form.Button;
+      var noButton = this._noButton = this.getChildControl("noButton");
       noButton.setAllowStretchX(true);
       noButton.addListener("execute", this._handleNo, this );
       this.bind("noButtonLabel",noButton, "label" );
       this.bind("noButtonIcon", noButton, "icon" );
       noButton.setLabel( this.tr("no") );
-      
-      /* 
-       * Cancel Button 
+
+      /*
+       * Cancel Button
        */
       var cancelButton = this._createCancelButton();
-      
+
       /*
        * buttons pane
        */
-      var buttonPane = new qx.ui.container.Composite;
-      var bpLayout = new qx.ui.layout.HBox(5)
+      var buttonPane = this.getChildControl("buttonPane");
+      var bpLayout = new qx.ui.layout.HBox(5);
       bpLayout.setAlignX("center");
       buttonPane.setLayout( bpLayout );
       buttonPane.add( yesButton );
       buttonPane.add( noButton );
       buttonPane.add( cancelButton );
       groupboxContainer.add(buttonPane);
-        
+
     },
-    
+
     /*
     ---------------------------------------------------------------------------
        EVENT HANDLERS
     ---------------------------------------------------------------------------
-    */     
-    
+    */
+
     /**
      * Handle click on yes button. Calls callback with
      * a "true" value
@@ -216,10 +261,10 @@ qx.Class.define("dialog.Confirm",
         this.getCallback().call(this.getContext(),true);
       }
       this.resetCallback();
-    },  
+    },
 
     /**
-     * Handle click on no button. Calls callback with 
+     * Handle click on no button. Calls callback with
      * a "false" value
      */
     _handleNo : function()
@@ -229,6 +274,6 @@ qx.Class.define("dialog.Confirm",
       {
         this.getCallback().call(this.getContext(),false);
       }
-    } 
+    }
   }
 });
